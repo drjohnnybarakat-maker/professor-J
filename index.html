@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Professor J</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Professor J">
+<meta name="theme-color" content="#1B2A40">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%231B2A40'/%3E%3Ccircle cx='50' cy='50' r='34' fill='none' stroke='%23B8863B' stroke-width='3'/%3E%3Ctext x='50' y='62' font-family='Georgia,serif' font-size='34' font-weight='700' fill='%23EEE7D6' text-anchor='middle'%3EPJ%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1B2A40; --paper:#EEE7D6; --paper-2:#E4DBC4;
+    --teal:#2F6F5E; --teal-dark:#1F4C40; --burgundy:#8C2F39; --gold:#B8863B;
+    --text:#221F1A; --muted:#5C574C; --card:#F7F3E8; --line:#CFC4A5;
+    --good:#2F6F5E; --mid:#B8863B; --bad:#8C2F39; --radius:10px;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;overscroll-behavior:none;}
+  body{
+    background:var(--paper);
+    background-image:radial-gradient(ellipse at top left, rgba(27,42,64,0.04), transparent 55%),
+      radial-gradient(ellipse at bottom right, rgba(140,47,57,0.04), transparent 55%);
+    color:var(--text); font-family:'Inter',system-ui,sans-serif; min-height:100vh; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:640px;margin:0 auto;padding:0 0 90px;min-height:100vh;position:relative;}
+  header{
+    padding:calc(env(safe-area-inset-top) + 14px) 20px 16px;
+    display:flex;align-items:center;gap:14px;border-bottom:1px solid var(--line);
+    background:var(--paper);position:sticky;top:0;z-index:20;
+  }
+  .seal{width:42px;height:42px;border-radius:50%;background:radial-gradient(circle at 35% 30%, var(--teal) 0%, var(--teal-dark) 100%);
+    border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;color:var(--paper);
+    font-family:'Source Serif 4',serif;font-weight:700;font-size:16px;flex-shrink:0;box-shadow:0 2px 6px rgba(27,42,64,0.25);}
+  header h1{font-family:'Source Serif 4',serif;font-weight:700;font-size:20px;margin:0;color:var(--ink);}
+  header .sub{font-size:11px;color:var(--muted);margin-top:2px;font-family:'IBM Plex Mono',monospace;}
+  .nav-icon-btn{background:none;border:1px solid var(--line);color:var(--ink);width:34px;height:34px;border-radius:50%;
+    cursor:pointer;font-size:16px;line-height:1;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+  .nav-icon-btn:active{background:var(--paper-2);}
+  main{padding:18px 20px 10px;}
+  .intro-line{font-family:'Source Serif 4',serif;font-style:italic;color:var(--ink);font-size:15.5px;line-height:1.55;
+    margin:6px 0 20px;border-left:3px solid var(--burgundy);padding-left:14px;}
+  .warn-box{background:rgba(184,134,59,0.12);border:1px solid var(--gold);border-radius:8px;padding:12px 14px;
+    font-size:12.5px;color:var(--ink);margin-bottom:16px;line-height:1.5;}
+  .uni-group{margin-bottom:22px;}
+  .uni-group h4{font-family:'IBM Plex Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:0.6px;
+    color:var(--burgundy);margin:0 0 10px;}
+  .profile-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;
+    margin-bottom:10px;cursor:pointer;display:flex;align-items:center;gap:14px;transition:transform .12s ease;}
+  .profile-card:active{transform:scale(0.985);}
+  .profile-card .badge{width:36px;height:36px;border-radius:8px;flex-shrink:0;background:var(--teal);color:var(--paper);
+    display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:11.5px;}
+  .profile-card .info h3{margin:0 0 2px;font-family:'Source Serif 4',serif;font-size:15.5px;color:var(--ink);}
+  .profile-card .info p{margin:0;font-size:11.5px;color:var(--muted);}
+  .tabbar{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--line);
+    display:flex;z-index:30;max-width:640px;margin:0 auto;padding-bottom:env(safe-area-inset-bottom);}
+  .tabbar button{flex:1;background:none;border:none;padding:11px 2px 9px;cursor:pointer;display:flex;
+    flex-direction:column;align-items:center;gap:3px;color:var(--muted);font-size:10px;font-weight:500;}
+  .tabbar button.active{color:var(--teal-dark);}
+  .tabbar button .dot{width:5px;height:5px;border-radius:50%;background:transparent;}
+  .tabbar button.active .dot{background:var(--burgundy);}
+  h2.section-title{font-family:'Source Serif 4',serif;font-size:18px;color:var(--ink);margin:2px 0 14px;
+    display:flex;align-items:baseline;gap:8px;}
+  h2.section-title .stamp{font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:var(--burgundy);
+    border:1px solid var(--burgundy);padding:1px 6px;border-radius:3px;text-transform:uppercase;letter-spacing:0.5px;}
+  select, input[type=text], input[type=password]{width:100%;padding:11px 12px;border:1px solid var(--line);
+    border-radius:8px;background:var(--card);font-size:14px;color:var(--text);margin-bottom:10px;font-family:'Inter';}
+  label.field-label{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;
+    margin-bottom:5px;display:block;font-family:'IBM Plex Mono',monospace;}
+  .btn{background:var(--teal-dark);color:var(--paper);border:none;padding:12px 18px;border-radius:8px;
+    font-weight:600;font-size:14px;cursor:pointer;width:100%;}
+  .btn:active{background:var(--teal);}
+  .btn.secondary{background:transparent;border:1px solid var(--line);color:var(--ink);}
+  .btn.danger{background:transparent;border:1px solid var(--burgundy);color:var(--burgundy);}
+  .chat-log{display:flex;flex-direction:column;gap:12px;margin-bottom:14px;min-height:60px;}
+  .bubble{padding:12px 14px;border-radius:10px;font-size:14px;line-height:1.55;max-width:88%;}
+  .bubble.user{align-self:flex-end;background:var(--teal-dark);color:var(--paper);border-bottom-right-radius:2px;}
+  .bubble.assistant{align-self:flex-start;background:var(--card);border:1px solid var(--line);
+    border-bottom-left-radius:2px;white-space:pre-wrap;}
+  .typing{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--muted);padding:4px 0;}
+  .quiz-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px;margin-bottom:14px;}
+  .quiz-card .qn{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--burgundy);margin-bottom:8px;}
+  .quiz-card .qtext{font-size:15px;line-height:1.5;margin-bottom:12px;color:var(--ink);}
+  .opt{display:block;width:100%;text-align:left;padding:10px 12px;margin-bottom:8px;border:1px solid var(--line);
+    border-radius:8px;background:var(--paper);cursor:pointer;font-size:13.5px;color:var(--text);}
+  .opt.correct{background:rgba(47,111,94,0.15);border-color:var(--good);}
+  .opt.wrong{background:rgba(140,47,57,0.12);border-color:var(--bad);}
+  .explain-box{font-size:13px;color:var(--muted);margin-top:10px;border-top:1px dashed var(--line);padding-top:10px;line-height:1.5;}
+  .flashcard{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:24px 18px;
+    min-height:140px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:16px;
+    line-height:1.5;cursor:pointer;margin-bottom:14px;color:var(--ink);font-family:'Source Serif 4',serif;position:relative;}
+  .flashcard .side-label{position:absolute;top:10px;left:14px;font-family:'IBM Plex Mono',monospace;font-size:9px;
+    color:var(--muted);text-transform:uppercase;}
+  .fc-controls{display:flex;gap:8px;margin-bottom:20px;}
+  .fc-controls button{flex:1;padding:11px 6px;border-radius:8px;border:none;font-weight:600;font-size:12px;color:#fff;}
+  .fc-again{background:var(--bad);} .fc-hard{background:var(--mid);} .fc-good{background:var(--good);}
+  .prog-subject{margin-bottom:16px;}
+  .prog-subject .plabel{display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:5px;}
+  .prog-subject .plabel b{color:var(--ink);}
+  .bar-bg{height:8px;background:var(--paper-2);border-radius:4px;overflow:hidden;}
+  .bar-fill{height:100%;border-radius:4px;}
+  .weak-item{background:rgba(140,47,57,0.08);border:1px solid rgba(140,47,57,0.3);border-radius:8px;
+    padding:10px 12px;margin-bottom:8px;font-size:12.5px;display:flex;justify-content:space-between;}
+  .weak-item span.pct{color:var(--burgundy);font-family:'IBM Plex Mono',monospace;font-weight:600;}
+  .manage-item{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px 12px;
+    margin-bottom:8px;font-size:13px;}
+  .manage-item .del{color:var(--burgundy);cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:10.5px;}
+  .empty-note{color:var(--muted);font-size:13px;font-style:italic;padding:20px 0;text-align:center;}
+  .topic-chip{display:inline-block;background:var(--paper-2);border-radius:14px;padding:5px 11px;font-size:11.5px;
+    margin:0 6px 6px 0;color:var(--ink);}
+  .key-status{display:flex;align-items:center;gap:8px;font-size:12.5px;margin-bottom:16px;padding:10px 12px;
+    border-radius:8px;background:var(--card);border:1px solid var(--line);}
+  .key-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+  .key-dot.on{background:var(--good);} .key-dot.off{background:var(--bad);}
+  #micBtn.mic-active{background:var(--burgundy);color:#fff;border-color:var(--burgundy);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <button class="nav-icon-btn" id="backBtn" style="display:none;" title="Back">&#8592;</button>
+    <div class="seal">PJ</div>
+    <div><h1>Professor J</h1><div class="sub" id="headerSub">MEDICAL STUDY COMPANION</div></div>
+    <button class="nav-icon-btn" id="homeBtn" style="display:none;margin-left:auto;" title="Home">&#8962;</button>
+  </header>
+  <main id="main"></main>
+  <div class="tabbar" id="tabbar" style="display:none;"></div>
+</div>
+
+<script>
+/* ---------------- Storage (localStorage — independent per device, with in-memory fallback) ----------------
+   Some contexts (Safari Private Browsing, sandboxed previews) block or quota-limit localStorage.
+   memCache is the real source of truth for the running session; localStorage is best-effort persistence
+   on top of it, so a blocked/broken localStorage never surfaces as a visible error during normal use. */
+const memCache = {};
+let storageAvailable = true;
+try{ localStorage.setItem('__pj_test__','1'); localStorage.removeItem('__pj_test__'); }
+catch(e){ storageAvailable = false; }
+
+function getStore(key, fallback){
+  if(key in memCache) return memCache[key];
+  if(storageAvailable){
+    try{
+      const v = localStorage.getItem(key);
+      if(v){ const parsed = JSON.parse(v); memCache[key] = parsed; return parsed; }
+    }catch(e){ /* corrupted or inaccessible — fall through to fallback */ }
+  }
+  memCache[key] = fallback;
+  return fallback;
+}
+function setStore(key, value){
+  memCache[key] = value;
+  if(!storageAvailable) return;
+  try{ localStorage.setItem(key, JSON.stringify(value)); }
+  catch(e){ /* quota or access error — memCache still holds the value for this session */ }
+}
+
+/* ---------------- Full curriculum seed ---------------- */
+const DEFAULT_PROFILES = [
+  // ---------- UCLouvain ----------
+  { id:'ucl-bac1', uni:'UCLouvain', name:'Bachelier 1 Médecine', tag:'BAC1', note:'Bruxelles Woluwe', subjects:[
+    { name:'Biologie générale et embryologie', topics:['Cellule et organites','Division cellulaire','Embryologie précoce','Gamétogenèse'] },
+    { name:'Histologie générale', topics:['Tissu épithélial','Tissu conjonctif','Tissu musculaire','Tissu nerveux'] },
+    { name:'Anatomie générale et fonctionnelle', topics:['Terminologie anatomique','Système locomoteur — généralités'] },
+    { name:'Biochimie (1re partie) et biologie moléculaire', topics:['Structure des protéines','Enzymologie',"Réplication de l'ADN",'Transcription et traduction'] },
+    { name:'Physique et chimie médicales', topics:['Chimie générale et organique','Notions de physique appliquées'] },
+    { name:'Statistiques médicales', topics:['Statistique descriptive','Notions de probabilité'] },
+    { name:'Epidémiologie et santé publique (intro)', topics:['Notions de base','Déterminants de la santé'] },
+    { name:'Sciences humaines & Philosophie', topics:['Philosophie des sciences','Ethique médicale — bases'] }
+  ]},
+  { id:'ucl-bac2', uni:'UCLouvain', name:'Bachelier 2 Médecine', tag:'BAC2', note:'Bruxelles Woluwe', subjects:[
+    { name:'Anatomie (régionale)', topics:['Thorax','Abdomen','Membre supérieur','Membre inférieur','Tête et cou'] },
+    { name:'Physiologie générale et spéciale', topics:['Physiologie cellulaire','Physiologie du système nerveux'] },
+    { name:'Système cardiovasculaire et respiratoire (1re partie)', topics:['Anatomie cardiaque','Physiologie respiratoire — bases'] },
+    { name:'Histologie spéciale', topics:['Histologie des systèmes'] },
+    { name:'Immunologie générale', topics:['Immunité innée','Immunité adaptative'] },
+    { name:'Microbiologie', topics:['Bactériologie générale','Virologie générale','Parasitologie — notions'] },
+    { name:'Pathologie biochimique et moléculaire', topics:['Pathologies métaboliques héréditaires'] },
+    { name:'Génétique humaine', topics:['Hérédité mendélienne','Cytogénétique'] },
+    { name:'Introduction à la pratique médicale', topics:["Stage d'observation"] },
+    { name:'Psychologie médicale', topics:['Psychologie du développement'] }
+  ]},
+  { id:'ucl-bac3', uni:'UCLouvain', name:'Bachelier 3 Médecine', tag:'BAC3', note:'Bruxelles Woluwe', subjects:[
+    { name:'Anatomie pathologique générale', topics:['Lésion cellulaire','Inflammation aiguë et chronique','Néoplasie — principes généraux'] },
+    { name:'Physiopathologie générale', topics:['Œdème et troubles hémodynamiques','Choc','Fièvre'] },
+    { name:'Pharmacologie générale', topics:['Pharmacocinétique','Pharmacodynamie'] },
+    { name:'Sémiologie clinique', topics:['Anamnèse et examen clinique','Sémiologie cardiaque','Sémiologie respiratoire'] },
+    { name:'Cardiologie', topics:['Insuffisance cardiaque','Coronaropathie','ECG normal'] },
+    { name:'Pneumologie', topics:['Asthme et BPCO','Pneumonies','Explorations fonctionnelles respiratoires'] },
+    { name:'Médecine factuelle — introduction', topics:["Lecture critique d'article",'Niveaux de preuve'] },
+    { name:'Génétique clinique', topics:['Conseil génétique'] },
+    { name:'Immunopathologie', topics:['Hypersensibilités','Maladies auto-immunes — bases'] },
+    { name:'Stage clinique (médecine générale)', topics:['Observation en cabinet'] }
+  ]},
+  { id:'ucl-m1', uni:'UCLouvain', name:'Master 1 Médecine', tag:'M1', note:'Bruxelles Woluwe', subjects:[
+    { name:'Secteur digestif', topics:['Pathologies œsophagiennes et gastriques','Pathologies hépatobiliaires','Pathologies intestinales'] },
+    { name:'Démarche clinique pédiatrique (sémiologie)', topics:["Examen clinique de l'enfant",'Croissance et développement'] },
+    { name:'Médecine factuelle (EBM)', topics:['Recherche bibliographique',"Analyse critique d'essais cliniques"] },
+    { name:'Développement des compétences cliniques 1', topics:['Gestes techniques de base'] },
+    { name:'Enjeux sociaux et éthique de la santé 1', topics:['Principes de bioéthique','Consentement éclairé'] },
+    { name:'Formation à la relation 1', topics:['Communication médecin-patient'] },
+    { name:'Stage clinique — 1re période', topics:['Intégration en service hospitalier'] }
+  ]},
+  { id:'ucl-m2', uni:'UCLouvain', name:'Master 2 Médecine', tag:'M2', note:'Bruxelles Woluwe', subjects:[
+    { name:'Secteur locomoteur', topics:['Traumatologie','Pathologies rhumatismales'] },
+    { name:'Secteur cardiovasculaire et respiratoire (2e partie)', topics:['Insuffisance cardiaque avancée','Pathologies vasculaires'] },
+    { name:'Secteur urologie-néphrologie', topics:['Insuffisance rénale chronique','Lithiase urinaire','Tumeurs urogénitales'] },
+    { name:'Secteur endocrinologie', topics:['Diabète et complications','Pathologies thyroïdiennes','Pathologies surrénaliennes'] },
+    { name:'Secteur médecine générale (1re partie)', topics:['Démarche clinique centrée patient'] },
+    { name:'Enjeux sociaux et éthique de la santé 2', topics:['Fin de vie','Justice en santé'] },
+    { name:'Stage clinique — 2e période', topics:['Compagnonnage hospitalier'] }
+  ]},
+  { id:'ucl-m3', uni:'UCLouvain', name:'Master 3 Médecine', tag:'M3', note:'Bruxelles Woluwe', subjects:[
+    { name:'Secteur neurologique', topics:['AVC','Épilepsie','Pathologies neurodégénératives'] },
+    { name:'Secteur psychiatrie', topics:["Troubles de l'humeur",'Troubles anxieux','Troubles psychotiques'] },
+    { name:'Secteur hématologie-oncologie', topics:['Anémies','Syndromes lymphoprolifératifs','Principes de chimiothérapie'] },
+    { name:'Secteur gynéco-obstétrique', topics:['Suivi de grossesse','Pathologies gynécologiques fréquentes'] },
+    { name:'Secteur pédiatrie (approfondi)', topics:['Pathologies pédiatriques courantes','Vaccination'] },
+    { name:'Secteur ORL-ophtalmologie-dermatologie', topics:['Pathologies ORL courantes','Urgences ophtalmologiques'] },
+    { name:'Secteur médecine générale (2e partie)', topics:['Organisation des soins en Belgique'] },
+    { name:'Médecine légale et gériatrie', topics:['Bases de médecine légale','Évaluation gériatrique'] },
+    { name:"Travail de fin d'études", topics:['Méthodologie de recherche clinique'] }
+  ]},
+  // ---------- Lebanese University ----------
+  { id:'lu-prep', uni:'Lebanese University', name:'Preparatory Year (Faculty of Science)', tag:'PA', note:'Common entry year before the medical faculty', subjects:[
+    { name:'General Physics', topics:['Mechanics basics','Electricity & magnetism'] },
+    { name:'General Chemistry', topics:['Atomic structure','Chemical bonding','Solutions & equilibria'] },
+    { name:'Organic Chemistry', topics:['Functional groups','Reaction mechanisms — basics'] },
+    { name:'General Biology', topics:['Cell biology','Genetics — basics'] },
+    { name:'Mathematics / Biostatistics Introduction', topics:['Descriptive statistics','Basic probability'] }
+  ]},
+  { id:'lu-y1', uni:'Lebanese University', name:'Year 1', tag:'Y1', note:'Hadath — please confirm subjects with the faculty schedule', subjects:[
+    { name:'Anatomy I', topics:['Osteology','Upper limb anatomy','Thorax anatomy'] },
+    { name:'Histology', topics:['Basic tissue types','Epithelium & connective tissue'] },
+    { name:'Embryology', topics:['Early embryonic development','Gametogenesis'] },
+    { name:'Biochemistry I', topics:['Protein structure','Enzyme kinetics'] },
+    { name:'Cell Biology', topics:['Cell organelles','Cell signaling — basics'] },
+    { name:'Physiology I', topics:['Cell membrane physiology','Homeostasis'] }
+  ]},
+  { id:'lu-y2', uni:'Lebanese University', name:'Year 2', tag:'Y2', note:'Hadath — please confirm subjects with the faculty schedule', subjects:[
+    { name:'Anatomy II', topics:['Abdomen anatomy','Lower limb anatomy','Head & neck anatomy'] },
+    { name:'Physiology II', topics:['Cardiovascular physiology','Respiratory physiology','Renal physiology'] },
+    { name:'Biochemistry II', topics:['Carbohydrate & lipid metabolism','Molecular biology — basics'] },
+    { name:'Microbiology — General', topics:['Bacterial structure & classification','Basic virology'] },
+    { name:'Immunology', topics:['Innate immunity','Adaptive immunity'] },
+    { name:'Genetics', topics:['Mendelian inheritance','Chromosomal disorders'] }
+  ]},
+  { id:'lu-y3', uni:'Lebanese University', name:'Year 3', tag:'Y3', note:'Hadath — please confirm subjects with the faculty schedule', subjects:[
+    { name:'General Pathology', topics:['Cell injury','Inflammation','Neoplasia — basics'] },
+    { name:'Pharmacology I', topics:['Pharmacokinetics','Pharmacodynamics','Autonomic drugs'] },
+    { name:'Parasitology', topics:['Protozoan infections','Helminth infections'] },
+    { name:'Clinical Semiology — Introduction', topics:['History taking','Basic physical exam'] },
+    { name:'Epidemiology & Biostatistics', topics:['Study designs','Descriptive epidemiology'] }
+  ]},
+  { id:'lu-y4', uni:'Lebanese University', name:'Year 4', tag:'Y4', note:'Hadath — please confirm subjects with the faculty schedule', subjects:[
+    { name:'General & Systemic Pathology', topics:['Cell injury & adaptation','Neoplasia','Hemodynamic disorders'] },
+    { name:'Pharmacology II', topics:['Cardiovascular pharmacology','Antimicrobial agents','CNS pharmacology'] },
+    { name:'Microbiology & Parasitology — Clinical', topics:['Clinically important bacteria','Clinical virology','Medical mycology'] },
+    { name:'Clinical Semiology', topics:['Cardiovascular semiology','Respiratory semiology','Abdominal semiology','Neurological semiology'] },
+    { name:'Introduction to Internal Medicine', topics:['History & physical exam integration','Common presenting complaints'] },
+    { name:'Introduction to Surgery', topics:['Pre/post-operative care basics','Surgical semiology'] },
+    { name:'Community & Preventive Medicine', topics:['Epidemiology in practice','Public health principles'] }
+  ]},
+  { id:'lu-y5', uni:'Lebanese University', name:'Year 5', tag:'Y5', note:'Hadath — please confirm subjects with the faculty schedule', subjects:[
+    { name:'Internal Medicine — Core Rotation', topics:['Cardiology','Pulmonology','Gastroenterology','Endocrinology'] },
+    { name:'Surgery — Core Rotation', topics:['General surgery principles','Pre/post-op management'] },
+    { name:'Pediatrics — Core Rotation', topics:['Neonatology basics','Common pediatric illnesses'] },
+    { name:'Obstetrics & Gynecology — Core Rotation', topics:['Normal pregnancy & delivery','Common gynecologic conditions'] },
+    { name:'Clinical Pharmacology & Therapeutics', topics:['Drug selection in clinical practice'] }
+  ]},
+  { id:'lu-y6', uni:'Lebanese University', name:'Year 6', tag:'Y6', note:'Hadath — please confirm subjects with the faculty schedule', subjects:[
+    { name:'Internal Medicine Subspecialties', topics:['Nephrology','Hematology-Oncology','Rheumatology','Infectious Disease'] },
+    { name:'Surgery Subspecialties', topics:['Orthopedics','Urology','ENT','Ophthalmology'] },
+    { name:'Psychiatry', topics:['Mood disorders','Psychotic disorders','Anxiety disorders'] },
+    { name:'Emergency Medicine', topics:['Triage & resuscitation','Common emergencies'] },
+    { name:'Family & Community Medicine', topics:['Primary care approach','Preventive care'] },
+    { name:'Research Project / Graduation Thesis', topics:['Research methodology','Thesis writing'] }
+  ]}
+];
+
+/* ---------------- State ---------------- */
+let state = { profiles: null, currentId: null, tab: 'explain', quiz: null, quizIndex:0, quizScore:0, fcDeck: [], fcIndex:0, fcFlipped:false };
+
+/* ---------------- Navigation history (Back / Home) ---------------- */
+let navStack = [];
+function snapshotState(){
+  return { currentId: state.currentId, tab: state.tab };
+}
+function pushNav(){ navStack.push(snapshotState()); updateNavButtons(); }
+function goBack(){
+  const prev = navStack.pop();
+  if(!prev){ updateNavButtons(); return; }
+  state.currentId = prev.currentId; state.tab = prev.tab;
+  if(state.currentId && state.profiles.find(p=>p.id===state.currentId)) renderDashboard();
+  else renderProfileSelect();
+  updateNavButtons();
+}
+function goHome(){
+  navStack = [];
+  state.currentId = null;
+  renderProfileSelect();
+  updateNavButtons();
+}
+function updateNavButtons(){
+  const backBtn = document.getElementById('backBtn');
+  const homeBtn = document.getElementById('homeBtn');
+  backBtn.style.display = navStack.length ? 'flex' : 'none';
+  homeBtn.style.display = state.currentId ? 'flex' : 'none';
+}
+document.getElementById('backBtn').onclick = goBack;
+document.getElementById('homeBtn').onclick = goHome;
+
+function init(){
+  state.profiles = getStore('profiles', null);
+  if(!state.profiles){ state.profiles = DEFAULT_PROFILES; setStore('profiles', state.profiles); }
+  state.currentId = getStore('lastProfile', null);
+  if(state.currentId && state.profiles.find(p=>p.id===state.currentId)){ renderDashboard(); }
+  else { renderProfileSelect(); }
+}
+function currentProfile(){ return state.profiles.find(p=>p.id===state.currentId); }
+
+/* ---------------- Profile select ---------------- */
+function renderProfileSelect(){
+  document.getElementById('tabbar').style.display = 'none';
+  document.getElementById('headerSub').textContent = 'MEDICAL STUDY COMPANION';
+  updateNavButtons();
+  const main = document.getElementById('main');
+  const key = getStore('apiKey', '');
+  main.innerHTML = `
+    <p class="intro-line">"Choose your file, and let's pick up exactly where your course left off."</p>
+    ${!key ? '<div class="warn-box">No API key set yet on this device. Go to Settings after choosing a profile to add a free Gemini key — each phone needs its own.</div>' : ''}
+    <div id="uniGroups"></div>
+    <button class="btn secondary" id="addProfileBtn" style="margin-top:6px;">+ Add a custom profile / new year</button>
+  `;
+  const groups = document.getElementById('uniGroups');
+  const byUni = {};
+  state.profiles.forEach(p=>{ (byUni[p.uni] = byUni[p.uni]||[]).push(p); });
+  Object.keys(byUni).forEach(uni=>{
+    const g = document.createElement('div'); g.className='uni-group';
+    g.innerHTML = `<h4>${uni}</h4>`;
+    byUni[uni].forEach(p=>{
+      const div = document.createElement('div'); div.className='profile-card';
+      div.innerHTML = `<div class="badge">${p.tag}</div><div class="info"><h3>${p.name}</h3><p>${p.note} · ${p.subjects.length} subjects</p></div>`;
+      div.onclick = ()=>{ pushNav(); state.currentId = p.id; setStore('lastProfile', p.id); renderDashboard(); };
+      g.appendChild(div);
+    });
+    groups.appendChild(g);
+  });
+  document.getElementById('addProfileBtn').onclick = addProfileFlow;
+}
+
+function addProfileFlow(){
+  const name = prompt("Name this profile (e.g. 'Bachelier 3 Médecine')");
+  if(!name) return;
+  const uni = prompt("University (e.g. 'UCLouvain')") || 'Custom';
+  const note = prompt("Short note") || '';
+  const tag = prompt("Short tag for the badge (e.g. BAC3)") || name.slice(0,3).toUpperCase();
+  const id = 'p-' + Date.now();
+  state.profiles.push({ id, uni, name, tag, note, subjects: [] });
+  setStore('profiles', state.profiles);
+  pushNav();
+  state.currentId = id; setStore('lastProfile', id);
+  renderDashboard();
+}
+
+/* ---------------- Dashboard shell ---------------- */
+const TABS = [
+  { id:'explain', label:'Explain' }, { id:'quiz', label:'Quiz' }, { id:'flash', label:'Flashcards' },
+  { id:'progress', label:'Progress' }, { id:'manage', label:'Manage' }, { id:'settings', label:'Settings' }
+];
+function renderDashboard(){
+  const p = currentProfile();
+  updateNavButtons();
+  document.getElementById('headerSub').textContent = p.tag + ' · ' + p.uni;
+  const tabbar = document.getElementById('tabbar');
+  tabbar.style.display = 'flex'; tabbar.innerHTML = '';
+  TABS.forEach(t=>{
+    const b = document.createElement('button');
+    b.innerHTML = `<span class="dot"></span>${t.label}`;
+    b.className = state.tab===t.id ? 'active' : '';
+    b.onclick = ()=>{ if(state.tab!==t.id){ pushNav(); } state.tab = t.id; renderDashboard(); };
+    tabbar.appendChild(b);
+  });
+  const main = document.getElementById('main'); main.innerHTML = '';
+  if(state.tab==='explain') renderExplain(main, p);
+  else if(state.tab==='quiz') renderQuiz(main, p);
+  else if(state.tab==='flash') renderFlash(main, p);
+  else if(state.tab==='progress') renderProgress(main, p);
+  else if(state.tab==='manage') renderManage(main, p);
+  else if(state.tab==='settings') renderSettings(main, p);
+}
+
+/* ---------------- Gemini API (BYOK — free tier, key stored locally on this device only) ---------------- */
+async function callClaude(system, messages){
+  const apiKey = getStore('apiKey', '');
+  if(!apiKey) throw new Error('NO_KEY');
+  const contents = messages.map(m => ({ role: m.role === 'assistant' ? 'model' : 'user', parts: [{ text: m.content }] }));
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        systemInstruction: { parts: [{ text: system }] },
+        contents: contents,
+        generationConfig: { maxOutputTokens: 1200 }
+      })
+    }
+  );
+  const data = await response.json();
+  if(data.error) throw new Error(data.error.message || 'API_ERROR');
+  const text = (data.candidates?.[0]?.content?.parts || []).map(b=>b.text||'').join('\\n');
+  return text;
+}
+function stripJsonFences(t){ return t.replace(/```json/gi,'').replace(/```/g,'').trim(); }
+
+/* ---------------- Voice: speak (TTS) ---------------- */
+let currentUtterance = null;
+function speakText(text, btn){
+  if(!('speechSynthesis' in window)) return;
+  if(speechSynthesis.speaking){ speechSynthesis.cancel(); if(btn) btn.textContent = '🔊'; if(currentUtterance && currentUtterance._btn===btn) { currentUtterance=null; return; } }
+  const clean = text.replace(/[*_#`]/g, '');
+  const u = new SpeechSynthesisUtterance(clean);
+  u._btn = btn;
+  u.onstart = ()=>{ if(btn) btn.textContent = '⏸'; };
+  u.onend = ()=>{ if(btn) btn.textContent = '🔊'; };
+  u.onerror = ()=>{ if(btn) btn.textContent = '🔊'; };
+  currentUtterance = u;
+  speechSynthesis.speak(u);
+}
+
+/* ---------------- Voice: listen (STT) ----------------
+   Note: Apple's WebKit does not run the Web Speech recognition API once a page is installed
+   as a Home Screen app (a known Safari/PWA limitation, not something fixable from app code).
+   Mic input works when Professor J is opened as a normal Safari tab; when launched from the
+   Home Screen icon, only text input and read-aloud replies are available. We detect this and
+   tell the student plainly rather than showing a silently broken mic button. */
+function getSpeechRecognition(){
+  return window.SpeechRecognition || window.webkitSpeechRecognition || null;
+}
+function isStandalonePWA(){
+  return window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
+}
+function setupMic(inputEl, micBtn){
+  const SR = getSpeechRecognition();
+  if(!SR || isStandalonePWA()){
+    micBtn.style.opacity = '0.35';
+    micBtn.onclick = ()=>{
+      alert(!SR ? "Voice input isn't supported in this browser." :
+        "Voice input only works when Professor J is open in a regular Safari tab — Apple disables microphone speech recognition for apps installed to the Home Screen. Text input and spoken replies still work fully here.");
+    };
+    return;
+  }
+  let recognizing = false;
+  const rec = new SR();
+  rec.continuous = false; rec.interimResults = false; rec.lang = 'en-US';
+  rec.onresult = (e)=>{ inputEl.value = e.results[0][0].transcript; };
+  rec.onend = ()=>{ recognizing = false; micBtn.classList.remove('mic-active'); };
+  rec.onerror = ()=>{ recognizing = false; micBtn.classList.remove('mic-active'); };
+  micBtn.onclick = ()=>{
+    if(recognizing){ rec.stop(); return; }
+    try{ rec.start(); recognizing = true; micBtn.classList.add('mic-active'); }catch(e){}
+  };
+}
+
+/* ---------------- SETTINGS TAB ---------------- */
+function renderSettings(main, p){
+  const key = getStore('apiKey', '');
+  main.innerHTML = `
+    <h2 class="section-title">Settings <span class="stamp">This device</span></h2>
+    <div class="key-status"><span class="key-dot ${key?'on':'off'}"></span>${key ? 'Free API key set on this device' : 'No API key set'}</div>
+    <label class="field-label">Google Gemini API key (free)</label>
+    <input type="password" id="apiKeyInput" placeholder="AIza..." value="${key ? '••••••••••••••••' : ''}">
+    <button class="btn" id="saveKeyBtn">Save key on this device</button>
+    ${key ? '<button class="btn danger" id="clearKeyBtn" style="margin-top:10px;">Remove key from this device</button>' : ''}
+    <p style="font-size:12px;color:var(--muted);line-height:1.6;margin-top:16px;">
+      Professor J runs on Google's Gemini API, which has a genuinely free tier — no card, no charges, no expiry.
+      Get a key in about a minute at <b>aistudio.google.com</b> → "Get API key" → "Create API key," then paste it here.
+      Each phone stores its own key locally and runs independently — nothing is shared between devices.
+    </p>
+    <p style="font-size:12px;color:var(--muted);line-height:1.6;margin-top:10px;">
+      Two honest limits of the free tier: it caps you around 15 requests per minute and roughly 1,000–1,500 per day —
+      far more than a student needs day to day, but a burst of quiz generation could occasionally hit a short pause.
+      Also, Google's free tier may use the questions and answers to improve their models, unlike a paid key — fine for
+      exam-prep content, just worth knowing.
+    </p>
+    <p style="font-size:12px;color:var(--muted);line-height:1.6;margin-top:10px;">
+      Current profile: <b>${p.name}</b> (${p.uni}). All data — progress, flashcards, curriculum — is stored only on this device.
+    </p>
+  `;
+  document.getElementById('saveKeyBtn').onclick = ()=>{
+    const v = document.getElementById('apiKeyInput').value.trim();
+    if(!v || v.startsWith('••')) return;
+    setStore('apiKey', v);
+    renderSettings(main, p);
+  };
+  const clearBtn = document.getElementById('clearKeyBtn');
+  if(clearBtn) clearBtn.onclick = ()=>{ delete memCache['apiKey']; if(storageAvailable){ try{ localStorage.removeItem('apiKey'); }catch(e){} } renderSettings(main, p); };
+}
+
+function noKeyMessage(){
+  return "No Gemini API key is set on this device yet. Go to the Settings tab and add one (free, from aistudio.google.com) to start using Professor J.";
+}
+
+/* ---------------- EXPLAIN TAB ---------------- */
+let explainHistory = [];
+function renderExplain(main, p){
+  main.innerHTML = `
+    <h2 class="section-title">Ask Professor J <span class="stamp">Q&amp;A</span></h2>
+    <label class="field-label">Subject</label><select id="expSubject"></select>
+    <label class="field-label">Topic (optional)</label><select id="expTopic"></select>
+    <div class="chat-log" id="chatLog"></div>
+    <div style="display:flex;gap:8px;align-items:stretch;">
+      <input type="text" id="expInput" placeholder="Ask about a concept, mechanism, or exam question..." style="margin-bottom:0;flex:1;">
+      <button id="micBtn" title="Voice input" style="flex:0 0 46px;border:1px solid var(--line);border-radius:8px;background:var(--card);font-size:18px;cursor:pointer;">🎤</button>
+    </div>
+    <button class="btn" id="expSend" style="margin-top:10px;">Ask</button>
+  `;
+  const subjSel = document.getElementById('expSubject');
+  p.subjects.forEach((s,i)=>{ const o=document.createElement('option'); o.value=i; o.textContent=s.name; subjSel.appendChild(o); });
+  function fillTopics(){
+    const topicSel = document.getElementById('expTopic'); topicSel.innerHTML = '<option value="">General / not sure</option>';
+    const s = p.subjects[subjSel.value];
+    if(s) s.topics.forEach(t=>{ const o=document.createElement('option'); o.value=t; o.textContent=t; topicSel.appendChild(o); });
+  }
+  subjSel.onchange = fillTopics; if(p.subjects.length) fillTopics();
+  renderChatLog();
+  document.getElementById('expSend').onclick = sendExplain;
+  document.getElementById('expInput').addEventListener('keydown', e=>{ if(e.key==='Enter') sendExplain(); });
+  setupMic(document.getElementById('expInput'), document.getElementById('micBtn'));
+
+  function renderChatLog(){
+    const log = document.getElementById('chatLog'); log.innerHTML = '';
+    explainHistory.forEach(m=>{
+      const div = document.createElement('div'); div.className='bubble '+m.role;
+      if(m.role==='assistant'){
+        const txt = document.createElement('span'); txt.textContent = m.content;
+        const speakBtn = document.createElement('button');
+        speakBtn.textContent = '🔊'; speakBtn.title = 'Read aloud';
+        speakBtn.style.cssText = 'float:right;background:none;border:none;cursor:pointer;font-size:14px;margin-left:8px;';
+        speakBtn.onclick = ()=> speakText(m.content, speakBtn);
+        div.appendChild(speakBtn); div.appendChild(txt);
+      } else { div.textContent = m.content; }
+      log.appendChild(div);
+    });
+    log.scrollTop = log.scrollHeight;
+  }
+  async function sendExplain(){
+    const input = document.getElementById('expInput'); const q = input.value.trim(); if(!q) return;
+    const subject = p.subjects[subjSel.value]?.name || ''; const topic = document.getElementById('expTopic').value;
+    explainHistory.push({role:'user', content:q}); renderChatLog(); input.value = '';
+    const log = document.getElementById('chatLog');
+    const typing = document.createElement('div'); typing.className='typing'; typing.textContent='Professor J is thinking...'; log.appendChild(typing);
+    const system = `You are Professor J — an experienced, warm, and slightly witty medical school professor and personal mentor, in the style of a beloved clinical teacher students actually look forward to seeing. ` +
+      `You are mentoring a student enrolled in "${p.name}" at ${p.uni} (${p.note}), currently on the subject "${subject}"${topic ? ', specifically the topic "'+topic+'"' : ''}. ` +
+      `Talk like a real professor having office hours with a student you know well, not like a search engine: address them directly, react to what they say, and treat this as an ongoing conversation rather than a one-off lookup. ` +
+      `Explain clearly and at the right depth for their exam level, using precise medical terminology, short spoken-friendly paragraphs (this may be read aloud), and clinical or mnemonic analogies where useful. ` +
+      `Teach the way a good mentor does: after explaining a concept, occasionally check understanding with a short follow-up question or a "does that make sense so far?" rather than just dumping information and stopping — but don't force this every single turn if it would feel repetitive. ` +
+      `Answer in the same language the student writes in (French, English, or Arabic). Keep answers focused and exam-relevant, not exhaustive textbook dumps. This is for exam preparation and mentorship only — never give real-patient clinical advice.`;
+    const msgs = explainHistory.map(m=>({role:m.role, content:m.content}));
+    try{
+      const answer = await callClaude(system, msgs);
+      typing.remove(); explainHistory.push({role:'assistant', content: answer}); renderChatLog();
+    }catch(e){
+      typing.remove();
+      explainHistory.push({role:'assistant', content: e.message==='NO_KEY' ? noKeyMessage() : 'Sorry — I could not reach the tutor service: '+e.message});
+      renderChatLog();
+    }
+  }
+}
+
+/* ---------------- QUIZ TAB ---------------- */
+function renderQuiz(main, p){
+  main.innerHTML = `
+    <h2 class="section-title">Practice Quiz <span class="stamp">MCQ</span></h2>
+    <label class="field-label">Subject</label><select id="qzSubject"></select>
+    <label class="field-label">Topic</label><select id="qzTopic"></select>
+    <button class="btn" id="qzGen">Generate 5 questions</button>
+    <div id="qzArea" style="margin-top:16px;"></div>
+  `;
+  const subjSel = document.getElementById('qzSubject');
+  p.subjects.forEach((s,i)=>{ const o=document.createElement('option'); o.value=i; o.textContent=s.name; subjSel.appendChild(o); });
+  function fillTopics(){ const t=document.getElementById('qzTopic'); t.innerHTML=''; const s=p.subjects[subjSel.value]; if(s) s.topics.forEach(x=>{const o=document.createElement('option');o.value=x;o.textContent=x;t.appendChild(o);}); }
+  subjSel.onchange = fillTopics; if(p.subjects.length) fillTopics();
+  document.getElementById('qzGen').onclick = async ()=>{
+    const subject = p.subjects[subjSel.value]?.name; const topic = document.getElementById('qzTopic').value;
+    const area = document.getElementById('qzArea'); area.innerHTML = '<div class="typing">Generating questions...</div>';
+    const system = `You are Professor J generating an exam-style multiple choice quiz for a student in "${p.name}" at ${p.uni}. ` +
+      `Create 5 questions on the topic "${topic}" within the subject "${subject}", at the difficulty expected for their exams. ` +
+      `Respond ONLY with a raw JSON array, no markdown fences, no preamble. Each item: {"question":"...","options":["A","B","C","D"],"correctIndex":0,"explanation":"short explanation"}.`;
+    try{
+      const raw = await callClaude(system, [{role:'user', content:'Generate the quiz now.'}]);
+      const qs = JSON.parse(stripJsonFences(raw));
+      state.quiz = qs; state.quizIndex = 0; state.quizScore = 0; state.quizMeta = { subject, topic };
+      showQuizQuestion(area, p);
+    }catch(e){ area.innerHTML = `<div class="empty-note">${e.message==='NO_KEY' ? noKeyMessage() : 'Could not generate the quiz. Please try again.'}</div>`; }
+  };
+}
+function showQuizQuestion(area, p){
+  const q = state.quiz[state.quizIndex];
+  if(!q){
+    area.innerHTML = `<div class="quiz-card"><div class="qtext">Quiz complete — score: ${state.quizScore} / ${state.quiz.length}</div></div>`;
+    recordProgress(p, state.quizMeta.subject, state.quizMeta.topic, state.quizScore, state.quiz.length);
+    return;
+  }
+  area.innerHTML = `<div class="quiz-card"><div class="qn">Question ${state.quizIndex+1} / ${state.quiz.length}</div>
+    <div class="qtext">${q.question}</div><div id="qzOpts"></div><div id="qzExplain"></div></div>`;
+  const optsDiv = document.getElementById('qzOpts');
+  q.options.forEach((opt,i)=>{
+    const b = document.createElement('button'); b.className='opt'; b.textContent=opt;
+    b.onclick = ()=>{
+      Array.from(optsDiv.children).forEach((c,ci)=>{ c.onclick=null; if(ci===q.correctIndex) c.classList.add('correct'); else if(ci===i) c.classList.add('wrong'); });
+      if(i===q.correctIndex) state.quizScore++;
+      document.getElementById('qzExplain').innerHTML = `<div class="explain-box">${q.explanation||''}</div><button class="btn" id="qzNext" style="margin-top:12px;">Next</button>`;
+      document.getElementById('qzNext').onclick = ()=>{ state.quizIndex++; showQuizQuestion(area, p); };
+    };
+    optsDiv.appendChild(b);
+  });
+}
+function recordProgress(p, subject, topic, score, total){
+  const key = 'progress:' + p.id; const prog = getStore(key, {});
+  if(!prog[subject]) prog[subject] = {};
+  if(!prog[subject][topic]) prog[subject][topic] = {attempts:0, correct:0, total:0};
+  prog[subject][topic].attempts += 1; prog[subject][topic].correct += score; prog[subject][topic].total += total;
+  setStore(key, prog);
+}
+
+/* ---------------- FLASHCARDS TAB ---------------- */
+function renderFlash(main, p){
+  main.innerHTML = `
+    <h2 class="section-title">Flashcards <span class="stamp">SR</span></h2>
+    <label class="field-label">Subject</label><select id="fcSubject"></select>
+    <label class="field-label">Topic</label><select id="fcTopic"></select>
+    <button class="btn" id="fcGen">Generate flashcards</button>
+    <div id="fcArea" style="margin-top:16px;"></div>
+  `;
+  const subjSel = document.getElementById('fcSubject');
+  p.subjects.forEach((s,i)=>{ const o=document.createElement('option'); o.value=i; o.textContent=s.name; subjSel.appendChild(o); });
+  function fillTopics(){ const t=document.getElementById('fcTopic'); t.innerHTML=''; const s=p.subjects[subjSel.value]; if(s) s.topics.forEach(x=>{const o=document.createElement('option');o.value=x;o.textContent=x;t.appendChild(o);}); }
+  subjSel.onchange = fillTopics; if(p.subjects.length) fillTopics();
+  document.getElementById('fcGen').onclick = async ()=>{
+    const subject = p.subjects[subjSel.value]?.name; const topic = document.getElementById('fcTopic').value;
+    const area = document.getElementById('fcArea'); area.innerHTML = '<div class="typing">Building flashcards...</div>';
+    const system = `You are Professor J creating spaced-repetition flashcards for a student in "${p.name}" at ${p.uni} studying "${subject}" / "${topic}". ` +
+      `Create 8 concise flashcards. Respond ONLY with a raw JSON array, no markdown fences: [{"front":"question or term","back":"concise answer"}].`;
+    try{
+      const raw = await callClaude(system, [{role:'user', content:'Generate the flashcards now.'}]);
+      const cards = JSON.parse(stripJsonFences(raw)).map(c=>({...c, box:1, subject, topic}));
+      const key = 'flashcards:' + p.id; const deck = getStore(key, []); setStore(key, deck.concat(cards));
+      state.fcDeck = cards; state.fcIndex = 0; state.fcFlipped = false;
+      showFlashcard(area, p);
+    }catch(e){ area.innerHTML = `<div class="empty-note">${e.message==='NO_KEY' ? noKeyMessage() : 'Could not generate flashcards. Please try again.'}</div>`; }
+  };
+}
+function showFlashcard(area, p){
+  if(state.fcIndex >= state.fcDeck.length){ area.innerHTML = '<div class="empty-note">Deck complete — nice work. Generate a new set or revisit weak topics in Progress.</div>'; return; }
+  const c = state.fcDeck[state.fcIndex];
+  area.innerHTML = `<div class="flashcard" id="fcCard"><div class="side-label">${state.fcFlipped ? 'Answer' : 'Question'} · ${state.fcIndex+1}/${state.fcDeck.length}</div>${state.fcFlipped ? c.back : c.front}</div>
+    <div class="fc-controls"><button class="fc-again">Again</button><button class="fc-hard">Hard</button><button class="fc-good">Good</button></div>`;
+  document.getElementById('fcCard').onclick = ()=>{ state.fcFlipped = !state.fcFlipped; showFlashcard(area, p); };
+  area.querySelectorAll('.fc-controls button').forEach(btn=>{ btn.onclick = (e)=>{ e.stopPropagation(); state.fcIndex++; state.fcFlipped=false; showFlashcard(area, p); }; });
+}
+
+/* ---------------- PROGRESS TAB ---------------- */
+function renderProgress(main, p){
+  const key = 'progress:' + p.id; const prog = getStore(key, {});
+  main.innerHTML = `<h2 class="section-title">Progress <span class="stamp">Tracker</span></h2><div id="progArea"></div>`;
+  const area = document.getElementById('progArea');
+  const subjects = Object.keys(prog);
+  if(!subjects.length){ area.innerHTML = '<div class="empty-note">No quiz attempts yet. Take a quiz to start tracking progress.</div>'; return; }
+  let html = ''; const weak = [];
+  subjects.forEach(subj=>{
+    const topics = prog[subj]; let subjCorrect=0, subjTotal=0;
+    Object.keys(topics).forEach(t=>{ subjCorrect+=topics[t].correct; subjTotal+=topics[t].total;
+      const pct = topics[t].total ? Math.round(100*topics[t].correct/topics[t].total) : 0;
+      if(pct < 60 && topics[t].attempts >= 1) weak.push({subj, topic:t, pct}); });
+    const pct = subjTotal ? Math.round(100*subjCorrect/subjTotal) : 0;
+    const color = pct>=80?'var(--good)':pct>=50?'var(--mid)':'var(--bad)';
+    html += `<div class="prog-subject"><div class="plabel"><b>${subj}</b><span>${pct}%</span></div><div class="bar-bg"><div class="bar-fill" style="width:${pct}%;background:${color};"></div></div></div>`;
+  });
+  if(weak.length){
+    html += '<h2 class="section-title" style="font-size:15px;margin-top:20px;">Weak topics to revisit</h2>';
+    weak.sort((a,b)=>a.pct-b.pct).forEach(w=>{ html += `<div class="weak-item"><span>${w.topic} <span style="color:var(--muted)">(${w.subj})</span></span><span class="pct">${w.pct}%</span></div>`; });
+  }
+  area.innerHTML = html;
+}
+
+/* ---------------- MANAGE TAB ---------------- */
+function renderManage(main, p){
+  main.innerHTML = `<h2 class="section-title">Manage Curriculum <span class="stamp">${p.tag}</span></h2>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:16px;">Add or correct subjects/topics as the year progresses.</p>
+    <div id="subjList"></div><button class="btn secondary" id="addSubjBtn" style="margin-top:6px;">+ Add subject</button>`;
+  const list = document.getElementById('subjList');
+  p.subjects.forEach((s, si)=>{
+    const div = document.createElement('div'); div.className='manage-item';
+    div.innerHTML = `<div style="display:flex;justify-content:space-between;"><b>${s.name}</b><span class="del" data-si="${si}">remove</span></div>
+      <div style="margin-top:8px;">${s.topics.map(t=>`<span class="topic-chip">${t}</span>`).join('')}</div>
+      <button class="btn secondary" data-add="${si}" style="margin-top:10px;padding:8px;font-size:12px;">+ Add topic</button>`;
+    list.appendChild(div);
+  });
+  list.querySelectorAll('.del').forEach(el=>{ el.onclick = ()=>{ p.subjects.splice(parseInt(el.dataset.si),1); setStore('profiles', state.profiles); renderManage(main, p); }; });
+  list.querySelectorAll('[data-add]').forEach(el=>{ el.onclick = ()=>{ const t = prompt('New topic name:'); if(!t) return; p.subjects[parseInt(el.dataset.add)].topics.push(t); setStore('profiles', state.profiles); renderManage(main, p); }; });
+  document.getElementById('addSubjBtn').onclick = ()=>{ const name = prompt('New subject name:'); if(!name) return; p.subjects.push({name, topics:[]}); setStore('profiles', state.profiles); renderManage(main, p); };
+}
+
+init();
+</script>
+</body>
+</html>
