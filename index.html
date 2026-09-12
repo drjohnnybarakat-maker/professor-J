@@ -564,7 +564,7 @@ async function callClaude(system, messages){
       body: JSON.stringify({
         systemInstruction: { parts: [{ text: system }] },
         contents: contents,
-        generationConfig: { maxOutputTokens: 8192, thinkingConfig: { thinkingBudget: 0 } }
+        generationConfig: { maxOutputTokens: 8192, thinkingConfig: { thinkingLevel: "low" } }
       })
     }
   );
