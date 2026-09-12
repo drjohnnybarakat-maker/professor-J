@@ -282,18 +282,19 @@ const DEFAULT_PROFILES = [
 ];
 
 /* ---------------- State ---------------- */
-let state = { profiles: null, currentId: null, tab: 'explain', quiz: null, quizIndex:0, quizScore:0, fcDeck: [], fcIndex:0, fcFlipped:false };
+let state = { profiles: null, currentId: null, tab: 'courses', courseView: 'subjects', courseSubj: null, courseTopic: null, quiz: null, quizIndex:0, quizScore:0, fcDeck: [], fcIndex:0, fcFlipped:false };
 
 /* ---------------- Navigation history (Back / Home) ---------------- */
 let navStack = [];
 function snapshotState(){
-  return { currentId: state.currentId, tab: state.tab };
+  return { currentId: state.currentId, tab: state.tab, courseView: state.courseView, courseSubj: state.courseSubj, courseTopic: state.courseTopic };
 }
 function pushNav(){ navStack.push(snapshotState()); updateNavButtons(); }
 function goBack(){
   const prev = navStack.pop();
   if(!prev){ updateNavButtons(); return; }
   state.currentId = prev.currentId; state.tab = prev.tab;
+  state.courseView = prev.courseView; state.courseSubj = prev.courseSubj; state.courseTopic = prev.courseTopic;
   if(state.currentId && state.profiles.find(p=>p.id===state.currentId)) renderDashboard();
   else renderProfileSelect();
   updateNavButtons();
@@ -368,7 +369,7 @@ function addProfileFlow(){
 
 /* ---------------- Dashboard shell ---------------- */
 const TABS = [
-  { id:'explain', label:'Explain' }, { id:'quiz', label:'Quiz' }, { id:'flash', label:'Flashcards' },
+  { id:'courses', label:'Courses' }, { id:'explain', label:'Explain' }, { id:'quiz', label:'Quiz' }, { id:'flash', label:'Flashcards' },
   { id:'progress', label:'Progress' }, { id:'manage', label:'Manage' }, { id:'settings', label:'Settings' }
 ];
 function renderDashboard(){
@@ -381,16 +382,173 @@ function renderDashboard(){
     const b = document.createElement('button');
     b.innerHTML = `<span class="dot"></span>${t.label}`;
     b.className = state.tab===t.id ? 'active' : '';
-    b.onclick = ()=>{ if(state.tab!==t.id){ pushNav(); } state.tab = t.id; renderDashboard(); };
+    b.onclick = ()=>{
+      if(state.tab!==t.id){ pushNav(); state.tab = t.id; state.courseView='subjects'; state.courseSubj=null; state.courseTopic=null; }
+      renderDashboard();
+    };
     tabbar.appendChild(b);
   });
   const main = document.getElementById('main'); main.innerHTML = '';
-  if(state.tab==='explain') renderExplain(main, p);
+  if(state.tab==='courses') renderCourses(main, p);
+  else if(state.tab==='explain') renderExplain(main, p);
   else if(state.tab==='quiz') renderQuiz(main, p);
   else if(state.tab==='flash') renderFlash(main, p);
   else if(state.tab==='progress') renderProgress(main, p);
   else if(state.tab==='manage') renderManage(main, p);
   else if(state.tab==='settings') renderSettings(main, p);
+}
+
+/* ---------------- COURSES TAB: subject -> chapters -> full content ---------------- */
+function renderCourses(main, p){
+  const view = state.courseView || 'subjects';
+  if(view === 'chapters') return renderCourseChapters(main, p);
+  if(view === 'content') return renderCourseContent(main, p);
+  main.innerHTML = `<h2 class="section-title">Courses <span class="stamp">Browse</span></h2>
+    <p style="font-size:12.5px;color:var(--muted);margin-bottom:14px;">Pick a course to see its chapters.</p>
+    <div id="courseSubjList"></div>`;
+  const list = document.getElementById('courseSubjList');
+  if(!p.subjects.length){ list.innerHTML = '<div class="empty-note">No courses yet — add some in the Manage tab.</div>'; return; }
+  p.subjects.forEach((s, si)=>{
+    const div = document.createElement('div'); div.className = 'profile-card';
+    div.innerHTML = `<div class="badge">${si+1}</div><div class="info"><h3>${s.name}</h3><p>${s.topics.length} chapters</p></div>`;
+    div.onclick = ()=>{ pushNav(); state.courseView='chapters'; state.courseSubj=si; renderDashboard(); };
+    list.appendChild(div);
+  });
+}
+
+function renderCourseChapters(main, p){
+  const s = p.subjects[state.courseSubj];
+  main.innerHTML = `<h2 class="section-title">${s.name} <span class="stamp">${s.topics.length} ch.</span></h2>
+    <div id="courseChList"></div>`;
+  const list = document.getElementById('courseChList');
+  if(!s.topics.length){ list.innerHTML = '<div class="empty-note">No chapters listed yet — add some in Manage.</div>'; return; }
+  s.topics.forEach((t, ti)=>{
+    const div = document.createElement('div'); div.className = 'profile-card';
+    div.innerHTML = `<div class="badge">${ti+1}</div><div class="info"><h3>${t}</h3><p>Tap to open the full chapter</p></div>`;
+    div.onclick = ()=>{ pushNav(); state.courseView='content'; state.courseTopic=ti; renderDashboard(); };
+    list.appendChild(div);
+  });
+}
+
+async function renderCourseContent(main, p){
+  const s = p.subjects[state.courseSubj];
+  const topic = s.topics[state.courseTopic];
+  const cacheKey = 'coursecontent:' + p.id + ':' + state.courseSubj + ':' + state.courseTopic;
+  main.innerHTML = `<h2 class="section-title">${topic} <span class="stamp">${s.name}</span></h2><div id="courseContentArea"></div>`;
+  const area = document.getElementById('courseContentArea');
+  const cached = getStore(cacheKey, null);
+  if(cached){ showCourseContent(area, cached, cacheKey, p, s, topic); return; }
+  area.innerHTML = '<div class="typing">Writing the full chapter...</div>';
+  await generateCourseContent(area, cacheKey, p, s, topic);
+}
+
+async function generateCourseContent(area, cacheKey, p, s, topic){
+  const french = p.uni === 'UCLouvain';
+  const system = `You are Professor J, an experienced and warm medical school professor, writing a complete course chapter for a student in "${p.name}" at ${p.uni}. ` +
+    `Write the full chapter on "${topic}" within the course "${s.name}", at the depth expected for their exams. ` +
+    `Structure it clearly with short section headings (plain text, not markdown symbols), definitions, mechanisms, and a short summary at the end. ` +
+    `Write entirely in ${french ? 'French' : 'English'}. This is exam-prep educational content only, never real-patient clinical advice.`;
+  try{
+    const text = await callClaude(system, [{role:'user', content:`Write the complete chapter on "${topic}" now.`}]);
+    setStore(cacheKey, text);
+    showCourseContent(area, text, cacheKey, p, s, topic);
+  }catch(e){
+    area.innerHTML = `<div class="empty-note">${e.message==='NO_KEY' ? noKeyMessage() : 'Could not generate this chapter: '+e.message}</div>`;
+  }
+}
+
+/* ---------------- PDF: generate + native share ---------------- */
+let jsPdfLoadPromise = null;
+function ensurePdfLib(){
+  if(window.jspdf) return Promise.resolve();
+  if(jsPdfLoadPromise) return jsPdfLoadPromise;
+  jsPdfLoadPromise = new Promise((resolve, reject)=>{
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+    s.onload = ()=> resolve();
+    s.onerror = ()=> reject(new Error('Could not load the PDF engine — check your internet connection.'));
+    document.head.appendChild(s);
+  });
+  return jsPdfLoadPromise;
+}
+function buildChapterPDF(title, subtitle, text){
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit:'pt', format:'a4' });
+  const margin = 48;
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const maxWidth = pageWidth - margin*2;
+  let y = margin;
+  doc.setFont('helvetica','bold'); doc.setFontSize(16);
+  doc.splitTextToSize(title, maxWidth).forEach(line=>{ doc.text(line, margin, y); y += 20; });
+  y += 4;
+  doc.setFont('helvetica','italic'); doc.setFontSize(10); doc.setTextColor(110);
+  doc.text(subtitle, margin, y); y += 24;
+  doc.setTextColor(20); doc.setFont('helvetica','normal'); doc.setFontSize(11);
+  const lineHeight = 15;
+  text.split('\\n').forEach(paragraph=>{
+    const wrapped = doc.splitTextToSize(paragraph || ' ', maxWidth);
+    wrapped.forEach(line=>{
+      if(y + lineHeight > pageHeight - margin){ doc.addPage(); y = margin; }
+      doc.text(line, margin, y); y += lineHeight;
+    });
+  });
+  return doc;
+}
+function pdfFileName(title){ return (title || 'chapter').replace(/[^a-z0-9]+/gi,'_').slice(0,60) + '.pdf'; }
+
+async function handleGeneratePDF(title, subtitle, text, btn){
+  const original = btn.textContent;
+  try{
+    btn.disabled = true; btn.textContent = 'Generating...';
+    await ensurePdfLib();
+    const doc = buildChapterPDF(title, subtitle, text);
+    const url = URL.createObjectURL(doc.output('blob'));
+    window.open(url, '_blank');
+  }catch(e){ alert(e.message || 'Could not generate the PDF.'); }
+  finally{ btn.disabled = false; btn.textContent = original; }
+}
+
+async function handleSharePDF(title, subtitle, text, btn){
+  const original = btn.textContent;
+  try{
+    btn.disabled = true; btn.textContent = 'Preparing...';
+    await ensurePdfLib();
+    const doc = buildChapterPDF(title, subtitle, text);
+    const blob = doc.output('blob');
+    const file = new File([blob], pdfFileName(title), { type: 'application/pdf' });
+    if(navigator.canShare && navigator.canShare({ files: [file] })){
+      await navigator.share({ files: [file], title: title });
+    } else {
+      const url = URL.createObjectURL(blob);
+      window.open(url, '_blank');
+      alert("Direct sharing isn't available in this browser context — the PDF opened in a new tab instead. Use its own share icon to send it to other apps.");
+    }
+  }catch(e){
+    if(e.name !== 'AbortError') alert(e.message || "Could not share the PDF on this device. Try Save PDF instead.");
+  }finally{ btn.disabled = false; btn.textContent = original; }
+}
+
+function showCourseContent(area, text, cacheKey, p, s, topic){
+  area.innerHTML = `
+    <div style="display:flex;gap:8px;margin-bottom:8px;">
+      <button class="btn secondary" id="speakChapterBtn" style="flex:1;">🔊 Read aloud</button>
+      <button class="btn secondary" id="regenChapterBtn" style="flex:1;">↻ Regenerate</button>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:12px;">
+      <button class="btn secondary" id="pdfSaveBtn" style="flex:1;">📄 Save PDF</button>
+      <button class="btn secondary" id="pdfShareBtn" style="flex:1;">📤 Share PDF</button>
+    </div>
+    <div class="bubble assistant" style="max-width:100%;font-size:14.5px;"></div>
+  `;
+  area.querySelector('.bubble').textContent = text;
+  document.getElementById('speakChapterBtn').onclick = (e)=> speakText(text, null);
+  document.getElementById('regenChapterBtn').onclick = async ()=>{
+    area.innerHTML = '<div class="typing">Rewriting the chapter...</div>';
+    await generateCourseContent(area, cacheKey, p, s, topic);
+  };
+  document.getElementById('pdfSaveBtn').onclick = (e)=> handleGeneratePDF(topic, s.name + ' — ' + p.name, text, e.currentTarget);
+  document.getElementById('pdfShareBtn').onclick = (e)=> handleSharePDF(topic, s.name + ' — ' + p.name, text, e.currentTarget);
 }
 
 /* ---------------- Gemini API (BYOK — free tier, key stored locally on this device only) ---------------- */
@@ -406,13 +564,16 @@ async function callClaude(system, messages){
       body: JSON.stringify({
         systemInstruction: { parts: [{ text: system }] },
         contents: contents,
-        generationConfig: { maxOutputTokens: 1200 }
+        generationConfig: { maxOutputTokens: 8192, thinkingConfig: { thinkingBudget: 0 } }
       })
     }
   );
   const data = await response.json();
   if(data.error) throw new Error(data.error.message || 'API_ERROR');
-  const text = (data.candidates?.[0]?.content?.parts || []).map(b=>b.text||'').join('\\n');
+  const candidate = data.candidates?.[0];
+  const text = (candidate?.content?.parts || []).map(b=>b.text||'').join('\\n');
+  if(!text && candidate?.finishReason === 'SAFETY') throw new Error('The response was blocked by a safety filter. Try rephrasing the question.');
+  if(!text && candidate?.finishReason === 'MAX_TOKENS') throw new Error('The answer ran out of room. Try asking a narrower question.');
   return text;
 }
 function stripJsonFences(t){ return t.replace(/```json/gi,'').replace(/```/g,'').trim(); }
